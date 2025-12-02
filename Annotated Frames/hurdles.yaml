@@ -1,0 +1,13 @@
+train: ../train/images
+val: ../valid/images
+test: ../test/images
+
+nc: 3
+names: ['athlete', 'finish', 'hurdle']
+
+roboflow:
+  workspace: hurdleapp
+  project: hurdles
+  version: 8
+  license: CC BY 4.0
+  url: https://universe.roboflow.com/hurdleapp/hurdles/dataset/8

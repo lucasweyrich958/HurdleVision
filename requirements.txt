@@ -1,0 +1,19 @@
+# Core Machine Learning & Vision
+ultralytics>=8.3.0
+opencv-python>=4.10.0
+torch>=2.0.0
+torchvision>=0.15.0
+
+# Data Manipulation & Math
+pandas>=2.0.0
+numpy>=1.24.0
+scipy>=1.10.0
+
+# Visualization & Logging
+matplotlib>=3.7.0
+seaborn>=0.12.0
+wandb>=0.16.0
+
+# Notebook Utilities
+notebook>=7.0.0
+ipykernel>=6.0.0
