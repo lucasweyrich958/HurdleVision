@@ -1,4 +1,3 @@
-# Import the functions from your new pipeline library
 import hurdle_analysis_pipeline as hap
 import pandas as pd
 import os
@@ -58,7 +57,6 @@ if __name__ == "__main__":
     # Run the analysis
     segments, flights, time = run_full_analysis(VIDEO_FILE, generate_video=True)
     
-    # You can now work with the final DataFrames here
     if segments is not None:
         print("\n--- Final DataFrames available in main script ---")
         print("\nSegment Analysis DataFrame:")

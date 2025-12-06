@@ -183,7 +183,6 @@ def pass_two_find_finish_line(video_path, trajectory_log_path):
     print(f"✅ Pass 2 Complete.")
     return finish_frame
 
-# <<< REVISED: Pass 3 now calculates all Phase 4 metrics and generates two reports >>>
 def pass_three_and_report(video_path, race_start_frame, finish_frame, hurdle_peaks):
     print("\n--- Starting Pass 3: Calculating Final Metrics... ---")
     traj_df = pd.read_csv("pass_1_trajectory_log.csv")

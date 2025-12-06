@@ -1,5 +1,3 @@
-# hurdle_analysis_pipeline.py
-
 import cv2
 import pandas as pd
 import numpy as np
@@ -17,7 +15,6 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 def load_models(detection_model_path=os.path.join(BASE_DIR, "models")):
     """Loads the detection model."""
-    # This print statement is now more useful as it will show when the model is reloaded
     print("\n--- Loading detection model... ---")
     try:
         detection_model = YOLO(detection_model_path)
@@ -64,7 +61,6 @@ def select_athlete_from_video(video_path, detection_model, class_ids):
 
     while not state['selection_done']:
         display_frame = frame.copy()
-        # Using persist=True is correct, the key is reloading the model for each athlete
         results = detection_model.track(frame, persist=True, verbose=False, tracker='botsort.yaml')
         if results and results[0].boxes.id is not None:
             state['first_frame_athletes'].clear()
@@ -187,11 +183,10 @@ def find_hurdle_peaks(trajectory_df):
     trajectory_df['y_smooth'] = savgol_filter(inverted_y, window_length, 3) 
     trajectory_df['ar_smooth'] = savgol_filter(trajectory_df['aspect_ratio'], window_length, 3)
 
-    # --- START MODIFICATION ---
     # Calculate separate prominence thresholds for each signal
     # Use a small epsilon to prevent zero standard deviation
     y_prominence_threshold = (np.std(trajectory_df['y_smooth']) / 8) + 1e-6
-    ar_prominence_threshold = (np.std(trajectory_df['ar_smooth']) / 4) + 1e-6 # AR signal is often less pronounced, so /4
+    ar_prominence_threshold = (np.std(trajectory_df['ar_smooth']) / 4) + 1e-6
     
     print(f"Calculated Y-Prominence Threshold: {y_prominence_threshold:.4f}")
     print(f"Calculated AR-Prominence Threshold: {ar_prominence_threshold:.4f}")
@@ -199,23 +194,18 @@ def find_hurdle_peaks(trajectory_df):
     # Find peaks using their respective thresholds
     y_peaks, y_props = find_peaks(trajectory_df['y_smooth'], prominence=y_prominence_threshold, distance=20)
     ar_peaks, _ = find_peaks(trajectory_df['ar_smooth'], prominence=ar_prominence_threshold, distance=20)
-    # --- END MODIFICATION ---
 
     print(f"Found {len(y_peaks)} raw vertical peaks and {len(ar_peaks)} raw aspect ratio peaks.")
     
     scored_peaks = []
     
-    # If no AR peaks are found, fall back to just Y-peaks (less accurate, but won't crash)
     if len(ar_peaks) == 0:
         print("--- WARNING: No AR peaks found. Falling back to Y-peaks only. Results may be inaccurate. ---")
         for i, y_peak in enumerate(y_peaks):
             scored_peaks.append({'index': y_peak, 'score': y_props['prominences'][i]})
     else:
-        # Original scoring logic
         for i, y_peak in enumerate(y_peaks):
             min_dist = min([abs(y_peak - ar_peak) for ar_peak in ar_peaks], default=10)
-            # We score based on prominence (how high) divided by distance to nearest AR peak (how close)
-            # A good peak is high (high prominence) and simultaneous (low min_dist)
             scored_peaks.append({'index': y_peak, 'score': y_props['prominences'][i] / (min_dist + 1)})
 
     if not scored_peaks: 
@@ -254,23 +244,15 @@ def find_finish_line_cross(video_path, detection_model, class_ids, trajectory_df
             results = detection_model(frame, classes=[class_ids['finish']], verbose=False)
             
             if results and results[0].boxes.shape[0] > 0:
-                # Get the finish line bounding box
                 finish_line_box = results[0].boxes.xyxy.cpu().numpy()[0]
                 
-                # --- START MODIFICATION ---
-                # Calculate the width of the finish line bounding box
                 finish_line_width = finish_line_box[2] - finish_line_box[0]
-                # Define the new trigger point: left edge + (width * buffer)
                 trigger_point = finish_line_box[0] + (finish_line_width * finish_buffer_percent)
                 
-                # Get the athlete's bounding box for this frame
                 athlete_box = athlete_boxes[frame_number]
-                # Calculate athlete's center
                 athlete_center_x = (athlete_box[0] + athlete_box[2]) / 2
                 
-                # Check if the athlete's center has passed the buffered trigger point
                 if athlete_center_x > trigger_point:
-                # --- END MODIFICATION ---
                     finish_frame = frame_number
                     print(f"🏁 Finish Line crossed at frame: {finish_frame} (Buffer Trigger: {trigger_point:.2f}px)")
                     break
@@ -300,7 +282,6 @@ def calculate_metrics_and_report(video_path, detection_model, class_ids, race_st
         window_df = trajectory_df[(trajectory_df['frame'] >= start_w) & (trajectory_df['frame'] <= end_w)]
         takeoff, landing = -1, -1
         
-        # Check if 'aspect_ratio' column exists, if not, calculate it for the window
         if 'aspect_ratio' not in window_df.columns and not window_df.empty:
             box_coords = window_df['box'].str.extract(r'\[\s*(\d+\.?\d*)\s+(\d+\.?\d*)\s+(\d+\.?\d*)\s+(\d+\.?\d*)\s*\]').astype(float)
             window_df['aspect_ratio'] = (box_coords[2] - box_coords[0]) / (box_coords[3] - box_coords[1])

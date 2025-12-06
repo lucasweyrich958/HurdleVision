@@ -3,13 +3,6 @@ import os
 import random
 
 def extract_random_frames():
-    """
-    Loops through videos in an input directory, extracts 50 random frames from each,
-    and saves them to a structured output directory. If a video has fewer than
-    50 frames, it extracts all of them.
-    """
-    # === Configuration ===
-    # ❗️ Please update these paths if they are different on your system.
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
     input_video_dir_path = os.path.join(BASE_DIR, "Races")
     output_frames_dir_path = os.path.join(BASE_DIR, "Frames")
@@ -21,7 +14,6 @@ def extract_random_frames():
     
     # Supported video file extensions
     video_extensions = ('.mp4', '.mov', '.avi', '.mkv', '.flv', '.mpeg')
-    # =====================
 
     # Ensure the main output directory exists
     os.makedirs(output_frames_dir, exist_ok=True)
